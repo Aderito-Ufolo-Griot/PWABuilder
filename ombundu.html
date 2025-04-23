@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR" style="scroll-behavior: smooth;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <title>Ombundu - Dicionário Digital</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="icon-192x192.png" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --africa-orange: #e67e22;
+            --africa-brown: #2c3e50;
+            --africa-red: #e74c3c;
+            --africa-green: #27ae60;
+        }
+
+        body {
+            font-family: 'Ubuntu', system-ui, sans-serif;
+            background: linear-gradient(45deg, #f9f9f9 0%, #e8e8e8 100%);
+            color: var(--africa-brown);
+            padding-top: 80px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .african-pattern {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            opacity: 0.08;
+            z-index: -1;
+            background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M20 50c0-8.284-6.716-15-15-15-8.284 0-15 6.716-15 15 0 8.284 6.716 15 15 15 8.284 0 15-6.716 15-15zm65 0c0-8.284-6.716-15-15-15-8.284 0-15 6.716-15 15 0 8.284 6.716 15 15 15 8.284 0 15-6.716 15-15z" fill="%232c3e50"/></svg>');
+        }
+
+        .navbar {
+            background: linear-gradient(to right, var(--africa-brown), var(--africa-red)) !important;
+            border-bottom: 4px solid var(--africa-orange);
+        }
+
+        .card-word {
+            background: rgba(255, 255, 255, 0.97) !important;
+            border: 2px solid var(--africa-orange);
+            border-radius: 15px;
+            transition: transform 0.3s;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .card-word:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-africa {
+            background: var(--africa-green);
+            color: white;
+            border-radius: 25px;
+            padding: 10px 25px;
+            transition: all 0.3s;
+        }
+
+        .btn-africa:hover {
+            transform: scale(1.05);
+            background: var(--africa-orange);
+        }
+
+        footer {
+            background: var(--africa-brown);
+            color: #fff;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        .pronunciation-btn {
+            background: var(--africa-green);
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .proverbio-card {
+            background: rgba(255,255,255,0.95);
+            border-left: 5px solid var(--africa-orange);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .language-info {
+            background: rgba(231, 126, 34, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+
+        .stats-badge {
+            background: rgba(255,255,255,0.9);
+            border: 2px solid var(--africa-orange);
+            border-radius: 20px;
+            padding: 8px 15px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 70px;
+            }
+            
+            .search-input {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="african-pattern"></div>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-book-open"></i> Ombundu Digital
+            </a>
+            <div class="stats-badge">
+                <span class="badge bg-primary me-2"><i class="fas fa-database"></i> <span id="totalWords">0</span></span>
+                <span class="badge bg-success"><i class="fas fa-tags"></i> <span id="totalCategories">0</span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        <div class="card card-word mb-4">
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control form-control-lg" 
+                           placeholder="🔍 Pesquisar em Umbundu ou Português...">
+                    <button class="btn btn-africa" onclick="searchDictionary()">
+                        <i class="fas fa-search"></i> Tamba
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3" id="phraseContainer"></div>
+
+        <section class="card card-word mt-5 language-info">
+            <div class="card-body">
+                <h3><i class="fas fa-globe-africa"></i> Sobre a Língua Umbundu</h3>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5>Distribuição Geográfica</h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-map-marker-alt me-2"></i>Angola Central</li>
+                            <li><i class="fas fa-users me-2"></i>6 milhões de falantes</li>
+                            <li><i class="fas fa-comments me-2"></i>Língua Bantu</li>
+                        </ul>
+                        <div class="alert alert-info mt-3">
+                            Principais regiões:
+                            <ul class="mb-0">
+                                <li>Huambo</li>
+                                <li>Bié</li>
+                                <li>Benguela</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Características Linguísticas</h5>
+                        <ul>
+                            <li>5 vogais básicas (a, e, i, o, u)</li>
+                            <li>Sistema de classes nominais</li>
+                            <li>Ordem sintática SVO</li>
+                            <li>13 consoantes básicas</li>
+                        </ul>
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-lightbulb"></i> Dica: Os substantivos começam com vogais
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card card-word mt-5">
+            <div class="card-body">
+                <h3><i class="fas fa-comment-dots"></i> Provérbios Tradicionais</h3>
+                <div class="proverbio-card">
+                    <p class="lead mb-1">"Ocilombo comuenyo ka co vakulako."</p>
+                    <p class="text-muted small mb-0">(A vida do preguiçoso não prospera)</p>
+                </div>
+                <div class="proverbio-card">
+                    <p class="lead mb-1">"Ocikunda ocimue ka cisosola."</p>
+                    <p class="text-muted small mb-0">(Uma mão só não lava o corpo)</p>
+                </div>
+                <div class="proverbio-card">
+                    <p class="lead mb-1">"Okulya okuvanda kukatwika kombalame."</p>
+                    <p class="text-muted small mb-0">(Comer escondido queima a garganta)</p>
+                </div>
+                <p class="text-center mt-4"><small>Mais provérbios serão adicionados em breve...</small></p>
+            </div>
+        </section>
+
+        <div class="donation-banner text-center mt-5 card-word">
+            <div class="card-body">
+                <h4><i class="fas fa-hands-holding-circle"></i> Apoie este Projeto</h4>
+                <div class="mt-3">
+                    <p class="mb-2">Sua contribuição ajuda a preservar nossa cultura</p>
+                    <div class="alert alert-light mt-3">
+                        <h5><i class="fas fa-university"></i> Dados Bancários</h5>
+                        <p class="mb-0 fw-bold">IBAN: AO06.0065.0000.4567.8910.1234.1</p>
+                        <small>Banco de Angola - Conto: 123456789</small>
+                    </div>
+                    <button class="btn btn-africa mt-3" onclick="showIdeaForm()">
+                        <i class="fas fa-lightbulb"></i> Sugerir Palavra
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <section class="card card-word mt-5" id="sobre">
+            <div class="card-body">
+                <h2 class="mb-4"><i class="fas fa-heart-circle-bolt"></i> Sobre Nós</h2>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Missão</h5>
+                        <p>Preservar e promover a língua Umbundu através da tecnologia digital, conectando gerações e culturas.</p>
+                        
+                        <h5 class="mt-4">Metas 2024</h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check me-2"></i>5.000 palavras catalogadas</li>
+                            <li><i class="fas fa-check me-2"></i>100 provérbios tradicionais</li>
+                            <li><i class="fas fa-check me-2"></i>App móvel disponível</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5 class="mt-4">Contactos</h5>
+                        <div class="contact-info">
+                            <a href="tel:+244948952432" class="btn btn-outline-primary mb-2 w-100">
+                                <i class="fas fa-phone"></i> +244 948 952 432
+                            </a>
+                            <a href="https://wa.me/+244948952432" class="btn btn-success mb-2 w-100">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+                            <a href="mailto:suporte@ombundu.ao" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-envelope"></i> Email
+                            </a>
+                        </div>
+                        
+                        <div class="social-links mt-4 text-center">
+                            <a href="https://facebook.com" class="btn btn-primary btn-sm mx-1">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            <a href="https://twitter.com" class="btn btn-primary btn-sm mx-1">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="https://instagram.com" class="btn btn-primary btn-sm mx-1">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-2">© 2024 Dicionário Digital Umbundu</p>
+            <small>Projeto Comunitário sem Fins Lucrativos</small>
+        </div>
+    </footer>
+
+    <script>
+        const phrases = [
+            {
+                umbundu: "Wekele",
+                portugues: "Bom dia",
+                pronuncia: "we-ké-le",
+                categoria: "Saudação",
+                exemplo: "Wekele ku vosi - Bom dia a todos"
+            },
+            {
+                umbundu: "Ondalenu",
+                portugues: "Como está você?",
+                pronuncia: "on-da-lé-nu",
+                categoria: "Saudação",
+                exemplo: "Ondalenu mama? - Como está senhora?"
+            },
+            
+{
+                umbundu: "Wekele",
+                portugues: "Bom dia",
+                pronuncia: "we-ké-le",
+                categoria: "Saudação",
+                exemplo: "Wekele ku vosi - Bom dia a todos"
+            },
+            {
+                umbundu: "Wekele",
+                portugues: "Bom dia",
+                pronuncia: "we-ké-le",
+                categoria: "Saudação",
+                exemplo: "Wekele ku vosi - Bom dia a todos"
+            },
+            {
+                umbundu: "Ondalenu",
+                portugues: "Como está você?",
+                pronuncia: "on-da-lé-nu",
+                categoria: "Saudação",
+                exemplo: "Ondalenu mama? - Como está senhora?"
+            },
+            {
+                umbundu: "Ondjila",
+                portugues: "Caminho/Estrada",
+                pronuncia: "on-djí-la",
+                categoria: "Localização",
+                exemplo: "Ondjila yoku hospital? - O caminho para o hospital?"
+            },
+            {
+                umbundu: "Omeva",
+                portugues: "Água",
+                pronuncia: "o-mé-va",
+                categoria: "Natureza",
+                exemplo: "Nda hange omeva - Eu quero água"
+            },
+            {
+                umbundu: "Okusoma",
+                portugues: "Estudar/Ler",
+                pronuncia: "ô-ku-sô-ma",
+                categoria: "Educação",
+                exemplo: "Omãla owa kwenda okusoma - A criança foi estudar"
+            },
+            {
+                umbundu: "Olondunge",
+                portugues: "Palavras",
+                pronuncia: "o-lon-dun-gue",
+                categoria: "Comunicação",
+                exemplo: "Tundolela olondunge vyolumbundu - Gostamos das palavras em umbundu"
+            },
+            {
+                umbundu: "Ombembwa",
+                portugues: "Cão",
+                pronuncia: "om-bém-bwa",
+                categoria: "Animais",
+                exemplo: "Ombembwa owa latuka - O cão latiu"
+            },
+            {
+                umbundu: "Olongombe",
+                portugues: "Gado/Vacas",
+                pronuncia: "o-lon-gom-bê",
+                categoria: "Animais",
+                exemplo: "Olongombe vatuvoka epulo - O gado entrou no campo"
+            },
+            {
+                umbundu: "Ekwatiso",
+                portugues: "Ajuda",
+                pronuncia: "e-kwá-ti-sô",
+                categoria: "Social",
+                exemplo: "Ndapilila ekwatiso - Peço ajuda"
+            },
+            {
+                umbundu: "Okukwata",
+                portugues: "Ajudar",
+                pronuncia: "ô-ku-kwá-ta",
+                categoria: "Ação",
+                exemplo: "Okukwata onjo yange - Ajudar minha casa"
+            },
+            {
+                umbundu: "Okukwenda",
+                portugues: "Andar/Caminhar",
+                pronuncia: "ô-ku-kwén-da",
+                categoria: "Movimento",
+                exemplo: "Okukwenda ku etanda - Andar até o mercado"
+            },
+            {
+                umbundu: "Omoko",
+                portugues: "Mão",
+                pronuncia: "o-mô-kô",
+                categoria: "Corpo humano",
+                exemplo: "Omoko yange iatite - Minha mão está suja"
+            },
+            {
+                umbundu: "Efimbo",
+                portugues: "Tempo",
+                pronuncia: "e-fím-bo",
+                categoria: "Tempo",
+                exemplo: "Efimbo liwuka - O tempo mudou"
+            },
+            {
+                umbundu: "Elihe",
+                portugues: "Ontem",
+                pronuncia: "e-lí-hê",
+                categoria: "Tempo",
+                exemplo: "Elihe twaya kw'etanda - Ontem fomos ao mercado"
+            },
+            {
+                umbundu: "Kati",
+                portugues: "Hoje",
+                pronuncia: "ká-ti",
+                categoria: "Tempo",
+                exemplo: "Kati handa kwenda okulya - Hoje quero comer"
+            },
+            {
+                umbundu: "Cande",
+                portugues: "Amanhã",
+                pronuncia: "cán-dê",
+                categoria: "Tempo",
+                exemplo: "Cande tukwenda okulima - Amanhã vamos cultivar"
+            },
+            {
+                umbundu: "Olusuku",
+                portugues: "Chapéu",
+                pronuncia: "o-lu-sú-ku",
+                categoria: "Vestuário",
+                exemplo: "Olusuku lya yange lyatite - Meu chapéu está velho"
+            },
+            {
+                umbundu: "Onjo",
+                portugues: "Casa",
+                pronuncia: "on-jô",
+                categoria: "Localização",
+                exemplo: "Onjo yange yalikwisa - Minha casa está longe"
+            },
+            {
+                umbundu: "Omwenyo",
+                portugues: "Vida",
+                pronuncia: "om-wê-nyô",
+                categoria: "Conceito",
+                exemplo: "Omwenyo wetu usuva - A nossa vida é bela"
+            },
+            {
+                umbundu: "Omãla wange",
+                portugues: "Meu filho",
+                pronuncia: "o-má-la wán-gê",
+                categoria: "Família",
+                exemplo: "Omãla wange owa kwenda kusoma - Meu filho foi estudar"
+            }
+            // ... (inserir todas as outras entradas aqui)
+        ];
+
+        function renderPhrases(filteredPhrases = phrases) {
+            const container = document.getElementById('phraseContainer');
+            container.innerHTML = '';
+            
+            if(filteredPhrases.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h4>Palavra não encontrada!</h4>
+                        <p>Esta palavra ainda não está em nosso banco de dados.<br>
+                        Estamos atualizando diariamente nosso acervo.</p>
+                        <button class="btn btn-africa" onclick="showIdeaForm()">
+                            <i class="fas fa-lightbulb"></i> Sugerir Palavra
+                        </button>
+                    </div>
+                `;
+                updateStats([]);
+                return;
+            }
+            
+            filteredPhrases.forEach(phrase => {
+                const card = `
+                    <div class="col-md-6">
+                        <div class="card card-word">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="mb-0">${phrase.umbundu}</h3>
+                                    <button class="pronunciation-btn" onclick="playPronunciation('${phrase.umbundu}')">
+                                        <i class="fas fa-volume-high"></i>
+                                    </button>
+                                </div>
+                                <div class="text-muted mb-2">${phrase.pronuncia}</div>
+                                <div class="alert alert-primary py-2">${phrase.portugues}</div>
+                                <div class="text-muted small">${phrase.exemplo}</div>
+                                <span class="badge bg-secondary mt-2">${phrase.categoria}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+            
+            updateStats(filteredPhrases);
+        }
+
+        function playPronunciation(word) {
+            if ('speechSynthesis' in window) {
+                const synth = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance(word);
+                const voices = synth.getVoices();
+                const africanVoice = voices.find(v => v.lang.includes('pt') || v.lang.includes('af'));
+                if (africanVoice) utterance.voice = africanVoice;
+                synth.speak(utterance);
+            }
+        }
+
+        function searchDictionary() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const results = phrases.filter(item => 
+                item.umbundu.toLowerCase().includes(term) ||
+                item.portugues.toLowerCase().includes(term)
+            );
+            renderPhrases(results);
+        }
+
+        function updateStats(filteredPhrases) {
+            document.getElementById('totalWords').textContent = filteredPhrases.length;
+            document.getElementById('totalCategories').textContent = 
+                new Set(filteredPhrases.map(p => p.categoria)).size;
+        }
+
+        function showIdeaForm() {
+            const idea = prompt("Partilhe a sua sugestão ou correção:");
+            if (idea) {
+                showToast('Obrigado pela sua contribuição! Kututu tukulupale!');
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'position-fixed bottom-0 end-0 p-3';
+            toast.innerHTML = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('Service Worker registrado'))
+                    .catch(err => console.log('Erro:', err));
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', renderPhrases);
+    </script>
+</body>
+</html>
